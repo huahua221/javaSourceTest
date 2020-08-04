@@ -1,5 +1,7 @@
 package com.main.java;
 
+import org.junit.Test;
+
 public class Winnowing {
     // 指纹提取算法
     // 基于 k-gram 的哈希码，以最小规则提取部分gram 的哈希码作为文档特征指纹，并记录gram的位置
@@ -8,5 +10,22 @@ public class Winnowing {
     // 一种方法是选取所有满足0 mod p（模p余0）的哈希值
     // 可以定义一个大小为w的窗口（w值自定义）来分割哈希值，窗口内的内容也是“高度邻接”的
     // 长度为w的窗口实际上对应了原文中长度t=k+w-1的子串
+    // 哈希值是JDK根据对象的地址或者字符串或者数字算出来的int类型的数值
 
+    /**
+     * 指纹提取
+     *
+     * @param window 滑动窗口大小
+     * @return
+     */
+    public static void winnow(int window) {
+
+    }
+
+    @Test
+    public void winnowTest() {
+        String a = "adoru";
+        System.out.println("哈希值" + a.hashCode());
+    }
 }
+
