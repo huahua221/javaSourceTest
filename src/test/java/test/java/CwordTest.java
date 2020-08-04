@@ -3,7 +3,6 @@ package test.java;
 import com.main.java.DelComments;
 import com.main.java.GetVectorDistence;
 import com.main.java.KeyStatistic;
-import groovy.json.JsonOutput;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -35,12 +34,14 @@ public class CwordTest {
 
     @Test
     public void cwordTest() {
-        String file1 = "/Users/huahuadepro/源代码相似性检测/源码/AllSubmitC/1.txt";
-        String file2 = "/Users/huahuadepro/源代码相似性检测/源码/AllSubmitC/2.txt";
+//        String file1 = "/Users/huahuadepro/源代码相似性检测/源码/AllSubmitC/1.txt";
+//        String file2 = "/Users/huahuadepro/源代码相似性检测/源码/AllSubmitC/2.txt";
+        String file1 = "D:/代码相似性检测源码等/课程设计---c++代码相似度计算/课程设计---c++代码相似度计算/代码相似度/1.txt";
+        String file2 = "D:/代码相似性检测源码等/课程设计---c++代码相似度计算/课程设计---c++代码相似度计算/代码相似度/3.txt";
         // 预处理：删除注释、空格、换行
         ArrayList<String> codeArray = DelComments.clearCommentandBlank(file1);
         ArrayList<String> codeArray2 = DelComments.clearCommentandBlank(file2);
-//        System.out.println(codeArray);
+        System.out.println(codeArray);
         // 统计关键字个数（特征向量提取）
         Map<String, Integer> ckeyWordMap = KeyStatistic.keyStatistic(codeArray, ckeyWordSet, symbolWordSet);
         Map<String, Integer> ckeyWordMap2 = KeyStatistic.keyStatistic(codeArray2, ckeyWordSet, symbolWordSet);
