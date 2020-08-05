@@ -104,8 +104,10 @@ public class Winnowing {
             hashes.add(h);
         } else {
             for (int i = 0; i < text.length() - this.minDetectedLength + 1; i++) {
-
-                hashes.add(getHash(text.substring(i, i + this.minDetectedLength)));
+                String subtext = text.substring(i, i + this.minDetectedLength);
+                hashes.add(getHash(subtext));
+                System.out.println("子串：" + subtext + " " + getHash(subtext));
+//                hashes.add(getHash(text.substring(i, i + this.minDetectedLength)));
             }
         }
         return hashes;
@@ -123,6 +125,7 @@ public class Winnowing {
         return Math.abs(h % 10000);//返回哈希值取余10000后（mod 10000）的绝对值
     }
 
+    // 根据窗口大小提取最小的指纹，并按照牲畜排序
     public Set<Integer> buildFingerprintSet(List<Integer> nHash) {
         Set<Integer> fp = new TreeSet<Integer>();
         for (int i = 0; i < nHash.size() - this.windowSize + 1; i++) {

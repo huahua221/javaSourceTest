@@ -10,9 +10,9 @@ public class WinnowTest {
         String a = "A do run run run, a do run run";
         String b = "adoru";
         Winnowing winnow = new Winnowing();
-//        System.out.println("指纹结果：");
+        System.out.println("指纹结果：");
 //        System.out.println(winnow.getHash(b));
-//        System.out.println(winnow.winnowUsingCharacters(a));
+        System.out.println(winnow.winnowUsingCharacters(a));
 //        System.out.println(winnow.winnowUsingCharacters(ctest));
     }
 }
