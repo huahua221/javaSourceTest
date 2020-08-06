@@ -128,13 +128,18 @@ public class Winnowing {
     // 根据窗口大小提取最小的指纹，并按照牲畜排序
     public Set<Integer> buildFingerprintSet(List<Integer> nHash) {
         Set<Integer> fp = new TreeSet<Integer>();
+        List<Map<String, Object>> winlist = new ArrayList<>();
+        Map<String, Object> winmap = new HashMap<>();
         for (int i = 0; i < nHash.size() - this.windowSize + 1; i++) {
             List<Integer> s = new ArrayList<Integer>(nHash.subList(i, i + this.windowSize));
             fp.add(Collections.min(s));
-//            fp.add(Collections.min(s));
-            System.out.println("fp:" + fp);
+        }
+        for (Integer s : fp) {
+
+            System.out.println("arr" + s);
         }
 
+//        System.out.println("fp:" + fp);
         return fp;
     }
 
