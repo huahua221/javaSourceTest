@@ -1,10 +1,5 @@
 package com.main.java;
 
-import groovy.json.JsonOutput;
-import groovy.transform.ASTTest;
-import org.junit.Test;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
@@ -46,8 +41,10 @@ public class JavaCompare {
     public static void main(String[] args) {
         JavaCompare jc = new JavaCompare();
 //        String file1 = "/Users/huahuadepro/自动化测试平台数据库/java.antjunit/src";
-        String file1 = "/Users/huahuadepro/自动化测试平台数据库/java.antjunit/src/com/ecax/java/SimpleCalculation.java";
-        String file2 = "/Users/huahuadepro/自动化测试平台数据库/java.antjunit/src/com/ecax/java/SimpleCalculationCopy.java";
+//        String file1 = "/Users/huahuadepro/自动化测试平台数据库/java.antjunit/src/com/ecax/java/SimpleCalculation.java";
+//        String file2 = "/Users/huahuadepro/自动化测试平台数据库/java.antjunit/src/com/ecax/java/SimpleCalculationCopy.java";
+        String file1 = "D:/ecax/开发/java.antjunit/src/com/ecax/java/SimpleCalculation.java";
+        String file2 = "D:/ecax/开发/java.antjunit/src/com/ecax/java/SimpleCalculationCopy.java";
         // 预处理：删除注释、空格、换行
         ArrayList<String> codeArray = DelComments.clearCommentandBlank(file1);
         ArrayList<String> codeArray2 = DelComments.clearCommentandBlank(file2);
