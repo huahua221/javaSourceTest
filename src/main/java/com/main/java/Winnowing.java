@@ -3,8 +3,10 @@ package com.main.java;
 import com.google.common.base.Splitter;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
+import org.apache.commons.collections4.MapUtils;
 
 import java.nio.charset.Charset;
+import java.text.DecimalFormat;
 import java.util.*;
 
 public class Winnowing {
@@ -18,6 +20,8 @@ public class Winnowing {
     // 哈希值是JDK根据对象的地址或者字符串或者数字算出来的int类型的数值
 
     // 在经典的MOSS系统中，对生成的文本指纹进行公共子串匹配，在上传的代码集中寻找匹配程度最高的代码文本作为匹配文本
+    // LCS??
+    // 或者直接通过相同指纹的计数公式来计算
 
     /**
      * 子串匹配至少与噪声阈值一样长，才能被检测到（用于过滤）
@@ -84,7 +88,7 @@ public class Winnowing {
      */
     public Set<Integer> winnowUsingCharacters(String text) {
         text = pretreatment(text);//预处理
-        System.out.println("预处理后：" + text);
+//        System.out.println("预处理后：" + text);
         List<Integer> nh = getHashesForNGramsOfChars(text);
         return buildFingerprintSet(nh);
     }
@@ -106,8 +110,7 @@ public class Winnowing {
             for (int i = 0; i < text.length() - this.minDetectedLength + 1; i++) {
                 String subtext = text.substring(i, i + this.minDetectedLength);
                 hashes.add(getHash(subtext));
-                System.out.println("子串：" + subtext + " " + getHash(subtext));
-//                hashes.add(getHash(text.substring(i, i + this.minDetectedLength)));
+//                System.out.println("子串：" + subtext + " " + getHash(subtext));
             }
         }
         return hashes;
@@ -129,17 +132,33 @@ public class Winnowing {
     public Set<Integer> buildFingerprintSet(List<Integer> nHash) {
         Set<Integer> fp = new TreeSet<Integer>();
         List<Map<String, Object>> winlist = new ArrayList<>();
-        Map<String, Object> winmap = new HashMap<>();
+        int winindex = 0; // winlist自己的下标
         for (int i = 0; i < nHash.size() - this.windowSize + 1; i++) {
             List<Integer> s = new ArrayList<Integer>(nHash.subList(i, i + this.windowSize));
-            fp.add(Collections.min(s));
+            Integer min = Collections.min(s);
+            fp.add(min);
+            Map<String, Object> winmap = new HashMap<>();
+            String fin = Integer.toString(min);
+            if (winindex != 0) {
+                Map<String, Object> lastmap = winlist.get(winindex - 1);
+                String lastfin = MapUtils.getString(lastmap, "finger");
+                if (lastfin.equals(fin)) {
+                    continue;
+                }
+            }
+            winmap.put("finger", fin);
+            winmap.put("position", i + s.indexOf(min));
+            winlist.add(winmap);
+            winindex++;
         }
-        for (Integer s : fp) {
-
-            System.out.println("arr" + s);
-        }
-
-//        System.out.println("fp:" + fp);
+//        for (Integer s : fp) {
+//            Map<String, Object> winmap = new HashMap<>();
+//            String fin = Integer.toString(s);
+//            winmap.put("finger", fin);
+//            winmap.put("position", nHash.indexOf(s));
+//            winlist.add(winmap);
+//        }
+//        System.out.println("列表：" + winlist);
         return fp;
     }
 
@@ -151,6 +170,24 @@ public class Winnowing {
         params.put("minDetectedLength", this.minDetectedLength);
         params.put("windowSize", this.windowSize);
         return params;
+    }
+
+    /**
+     * 根据提取出的指纹，通过公式直接计算相似度
+     */
+    public String WinSimCalculator(Set<Integer> fingertsetA, Set<Integer> fingertsetB) {
+        // 公式：sim(A,B)=2*(A,B交集)/（A,B各自的指纹数相加）
+        System.out.println("fingertsetA:" + fingertsetA);
+        System.out.println("fingertsetB:" + fingertsetB);
+        int countA = fingertsetA.size();
+        int countB = fingertsetB.size();
+        Set<Integer> intersectionSet = new HashSet<>();
+        intersectionSet.addAll(fingertsetA);
+        intersectionSet.retainAll(fingertsetB);
+        int countInter = intersectionSet.size();
+        DecimalFormat df = new DecimalFormat("0.00000");//设置保留位数
+//        System.out.println((countA+countB));
+        return df.format((2 * (float) countInter / ((float) countA + (float) countB)));
     }
 
 }
