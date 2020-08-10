@@ -1,12 +1,9 @@
 package com.main.java;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 
 // 删除注释、换行以及空格
@@ -33,7 +30,7 @@ public class DelComments {
                     strArray.addAll(clearCommentOnly(f, charset));
                 }
                 return strArray;
-            } else if (!file.getName().endsWith(".java")) {
+            } else if (!file.getName().endsWith(".java") && !file.getName().endsWith(".txt") && !file.getName().endsWith(".cpp")) {
                 //非java文件直接返回
                 return strArray;
             }
@@ -75,7 +72,7 @@ public class DelComments {
                     strArray.addAll(clearCommentandBlank(f, charset));
                 }
                 return strArray;
-            } else if (!file.getName().endsWith(".java") && !file.getName().endsWith(".txt")) {
+            } else if (!file.getName().endsWith(".java") && !file.getName().endsWith(".txt") && !file.getName().endsWith(".cpp")) {
                 //非java或者c文件直接返回
                 return strArray;
             }

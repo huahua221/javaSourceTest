@@ -93,6 +93,30 @@ public class Winnowing {
         return buildFingerprintSet(nh);
     }
 
+    /**
+     * ----通过文件计算由字符组成的N-Grams的数字指纹. 预处理：所以字母变为小写且去除空格----
+     */
+    public Set<Integer> winnowUsingCharactersFile(ArrayList<String> codeArray) {
+        Set<Integer> setstring = new TreeSet<>();
+        Set<Integer> setstringall = new TreeSet<>();
+        try {
+            for (String text : codeArray) {
+                // 对array中的每一个string进行指纹提取
+                text = pretreatment(text);//预处理
+//                System.out.println("预处理后：" + text);
+                List<Integer> nh = getHashesForNGramsOfChars(text);
+                setstring = buildFingerprintSet(nh);
+//                System.out.println("指纹分项：" + setstring);
+                // 将所有的指纹set合并
+                setstringall.addAll(setstring);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+//        System.out.println("合并：" + setstringall);
+        return setstringall;
+    }
+
     //预处理
     public String pretreatment(String text) {
         String textWithoutPunctuation = text.replaceAll("[\\pP+~$`^=|<>～｀＄＾＋＝｜＜＞￥×]", "");//去除标点符号
