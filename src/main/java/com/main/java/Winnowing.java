@@ -182,7 +182,9 @@ public class Winnowing {
 //            winmap.put("position", nHash.indexOf(s));
 //            winlist.add(winmap);
 //        }
-//        System.out.println("列表：" + winlist);
+        for (Map win : winlist) {
+            System.out.println("列表：" + win);
+        }
         return fp;
     }
 
