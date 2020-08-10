@@ -10,7 +10,7 @@ import java.text.DecimalFormat;
 import java.util.*;
 
 public class Winnowing {
-    // 指纹提取算法
+    // 指纹提取算法（是基于KR贪心算法的）
     // 基于 k-gram 的哈希码，以最小规则提取部分gram 的哈希码作为文档特征指纹，并记录gram的位置
     // 一个长度为n的字符串，当将它分成k-grams后，将会形成n-k+1个子串，且每个子串长度为k
     // 如果将所有哈希值作为文件的指纹用于比较，显然是不高效的，也没有那个必要，所以只需选取哈希值的一个子集最为文件指纹即可。
