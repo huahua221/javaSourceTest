@@ -3,6 +3,7 @@ package com.main.java;
 import com.google.common.base.Splitter;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
+import groovy.json.JsonOutput;
 import org.apache.commons.collections4.MapUtils;
 
 import java.nio.charset.Charset;
@@ -26,17 +27,22 @@ public class Winnowing {
     /**
      * 子串匹配至少与噪声阈值一样长，才能被检测到（用于过滤）
      */
-    public static int minDetectedLength = 0;
+    private static int minDetectedLength = 0;
     /**
      * 滑动窗口的大小
      */
-    public static int windowSize;
+    private static int windowSize;
+    /**
+     * 指纹位置map, buildfinger函数调用次数
+     */
+    public int timebuildfinger = 0;
+    public Map<String, Object> winmapall = new HashMap<>();
 
     /**
      * 初始化参数，滑动窗口大小 = minDetectedLength - noiseThreshold + 1
      *
      * @param minDetectedLength 子串能被监测到的最短长度
-     * @param noiseThreshold 噪声阈值，不检测比这个值小的匹配
+     * @param noiseThreshold    噪声阈值，不检测比这个值小的匹配
      */
     public Winnowing(int minDetectedLength, int noiseThreshold) {
         this.minDetectedLength = minDetectedLength;
@@ -152,8 +158,12 @@ public class Winnowing {
         return Math.abs(h % 10000);//返回哈希值取余10000后（mod 10000）的绝对值
     }
 
-    // 根据窗口大小提取最小的指纹，并按照牲畜排序
+    /**
+     * 根据窗口大小提取最小的指纹，并按照升序排序
+     * 同时，提取相同哈希值指纹的位置
+     */
     public Set<Integer> buildFingerprintSet(List<Integer> nHash) {
+        this.timebuildfinger++;
         Set<Integer> fp = new TreeSet<Integer>();
         List<Map<String, Object>> winlist = new ArrayList<>();
         int winindex = 0; // winlist自己的下标
@@ -175,6 +185,14 @@ public class Winnowing {
             winlist.add(winmap);
             winindex++;
         }
+        if (this.timebuildfinger == 1) {
+            this.winmapall.put("fingerA", winlist);
+        } else if (this.timebuildfinger == 2) {
+            this.winmapall.put("fingerB", winlist);
+        } else {
+            System.out.println("超过调用次数！");
+        }
+
 //        for (Integer s : fp) {
 //            Map<String, Object> winmap = new HashMap<>();
 //            String fin = Integer.toString(s);
@@ -182,9 +200,6 @@ public class Winnowing {
 //            winmap.put("position", nHash.indexOf(s));
 //            winlist.add(winmap);
 //        }
-        for (Map win : winlist) {
-            System.out.println("列表：" + win);
-        }
         return fp;
     }
 
@@ -214,6 +229,61 @@ public class Winnowing {
         DecimalFormat df = new DecimalFormat("0.00000");//设置保留位数
 //        System.out.println((countA+countB));
         return df.format((2 * (float) countInter / ((float) countA + (float) countB)));
+    }
+
+    /**
+     * 返回带有位置信息的finger map
+     */
+    public Map<String, Object> FingerPosition() {
+        return this.winmapall;
+    }
+
+    /**
+     * 对带有位置信息的finger map进行分析处理
+     */
+    public void GetSameFingerPosition() {
+        // 用list分别存储相同位置的结果
+        List<Map<String, Object>> SameAlist = new ArrayList<>();
+        List<Map<String, Object>> SameBlist = new ArrayList<>();
+        // 获取finger map
+        List<Map<String, Object>> fingerlistA = (List<Map<String, Object>>) MapUtils.getObject(this.winmapall, "fingerA");
+        List<Map<String, Object>> fingerlistB = (List<Map<String, Object>>) MapUtils.getObject(this.winmapall, "fingerB");
+        // 先给所有的项添加一个falg=0,表示还没有被添加进list
+        for (Map<String, Object> mapA : fingerlistA) {
+            mapA.put("flag", 0);
+        }
+        for (Map<String, Object> mapB : fingerlistB) {
+            mapB.put("flag", 0);
+        }
+        // 开始循环判断哈希值相等
+        for (Map<String, Object> mapA : fingerlistA) {
+            int flagDifferent = 0; // 用于计数，不会重复将A中的内容添加进map
+            for (Map<String, Object> mapB : fingerlistB) {
+                if (MapUtils.getString(mapB, "finger").equals(MapUtils.getString(mapA, "finger"))) {
+                    // 相等时先判断B中元素是否已经存进list过
+                    // flag=0表示还没有将此项添加进list
+                    if (MapUtils.getString(mapB, "flag").equals("1")) {
+                        // 表示已经B存进去过一次了，只存A了,存完就不用再比较B中剩下的了
+                        SameAlist.add(mapA);
+                        mapA.put("flag", 1);
+                        break;
+                    } else {
+                        if (flagDifferent == 0) {
+                            SameAlist.add(mapA);
+                            mapA.put("flag", 1);
+                        }
+                        SameBlist.add(mapB);
+                        mapB.put("flag", 1);
+                        flagDifferent = 1;
+                    }
+                }
+            }
+        }
+        System.out.println("SameAlist:");
+        System.out.println(JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(SameAlist)));
+        System.out.println("SameBlist:");
+        System.out.println(JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(SameBlist)));
+
     }
 
 }

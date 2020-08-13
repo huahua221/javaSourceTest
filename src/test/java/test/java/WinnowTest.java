@@ -29,7 +29,7 @@ public class WinnowTest {
 //        String file1 = "D:/ecax/开发/java.antjunit/src/com/ecax/java/SimpleCalculation.java";
 //        String file2 = "D:/ecax/开发/java.antjunit/src/com/ecax/java/SimpleCalculationCopy.java";
         String file1 = "C:/Users/93507/Desktop/Csubmit/1.cpp";
-        String file2 = "C:/Users/93507/Desktop/Csubmit/2.cpp";
+        String file2 = "C:/Users/93507/Desktop/Csubmit/3.cpp";
         // 预处理：删除注释、空格、换行
         ArrayList<String> codeArray = DelComments.clearCommentandBlank(file1);
         ArrayList<String> codeArray2 = DelComments.clearCommentandBlank(file2);
@@ -37,7 +37,10 @@ public class WinnowTest {
         // 分别提取两个array的指纹，并且多文件的指纹进行合并
         Set<Integer> setf1 = winnow.winnowUsingCharactersFile(codeArray);
         Set<Integer> setf2 = winnow.winnowUsingCharactersFile(codeArray2);
-        String winsim = winnow.WinSimCalculator(setf1, setf2);
-        System.out.println("指纹提取公式相似度：" + winsim);
+//        String winsim = winnow.WinSimCalculator(setf1, setf2);
+//        System.out.println("指纹提取公式相似度：" + winsim);
+        // 相同指纹的位置map获取,同时对位置信息进行对比分析
+        winnow.GetSameFingerPosition();
+
     }
 }
