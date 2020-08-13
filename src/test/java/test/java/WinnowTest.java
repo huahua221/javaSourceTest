@@ -5,6 +5,7 @@ import com.main.java.Winnowing;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Set;
 
 public class WinnowTest {
@@ -33,14 +34,17 @@ public class WinnowTest {
         // 预处理：删除注释、空格、换行
         ArrayList<String> codeArray = DelComments.clearCommentandBlank(file1);
         ArrayList<String> codeArray2 = DelComments.clearCommentandBlank(file2);
+        // 实例化
         Winnowing winnow = new Winnowing();
         // 分别提取两个array的指纹，并且多文件的指纹进行合并
         Set<Integer> setf1 = winnow.winnowUsingCharactersFile(codeArray);
         Set<Integer> setf2 = winnow.winnowUsingCharactersFile(codeArray2);
+        // 相似度计算
 //        String winsim = winnow.WinSimCalculator(setf1, setf2);
 //        System.out.println("指纹提取公式相似度：" + winsim);
-        // 相同指纹的位置map获取,同时对位置信息进行对比分析
-        winnow.GetSameFingerPosition();
-
+        // 定位分析
+        Map<String, Object> samepositionmap = winnow.getSameFingerPosition();
+        winnow.getStringFixedPosition(samepositionmap);
+//        System.out.println(JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(samepositionmap)));
     }
 }

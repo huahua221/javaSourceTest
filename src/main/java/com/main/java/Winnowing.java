@@ -3,7 +3,6 @@ package com.main.java;
 import com.google.common.base.Splitter;
 import com.google.common.hash.Hasher;
 import com.google.common.hash.Hashing;
-import groovy.json.JsonOutput;
 import org.apache.commons.collections4.MapUtils;
 
 import java.nio.charset.Charset;
@@ -241,7 +240,8 @@ public class Winnowing {
     /**
      * 对带有位置信息的finger map进行分析处理
      */
-    public void GetSameFingerPosition() {
+    public Map<String, Object> getSameFingerPosition() {
+        Map<String, Object> samePositionmap = new HashMap<>();
         // 用list分别存储相同位置的结果
         List<Map<String, Object>> SameAlist = new ArrayList<>();
         List<Map<String, Object>> SameBlist = new ArrayList<>();
@@ -279,10 +279,19 @@ public class Winnowing {
                 }
             }
         }
-        System.out.println("SameAlist:");
-        System.out.println(JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(SameAlist)));
-        System.out.println("SameBlist:");
-        System.out.println(JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(SameBlist)));
+        samePositionmap.put("SameAlist", SameAlist);
+        samePositionmap.put("SameBlist", SameBlist);
+
+        return samePositionmap;
+    }
+
+    /**
+     * 利用统计出的finger map来标记字符串
+     */
+    public void getStringFixedPosition(Map<String, Object> samePositionmap) {
+        // 根据哈希值的位置进行字符串定位的算法：
+        // 起始位置：position
+        // 结束位置：position + minDetectedLength
 
     }
 
