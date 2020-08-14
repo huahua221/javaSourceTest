@@ -2,9 +2,11 @@ package test.java;
 
 import com.main.java.DelComments;
 import com.main.java.Winnowing;
+import groovy.json.JsonOutput;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Set;
 
 public class WinnowTest {
@@ -32,22 +34,22 @@ public class WinnowTest {
 //        String file2 = "C:/Users/93507/Desktop/Csubmit/3.cpp";
 //        String file1 = "/Users/huahuadepro/源代码相似性检测/源码/AllSubmitC/1.txt";
 //        String file2 = "/Users/huahuadepro/源代码相似性检测/源码/AllSubmitC/3.txt";
-        String file1 = "/Users/huahuadepro/自动化测试平台数据库/java.antjunit";
-        String file2 = "/Users/huahuadepro/自动化测试平台数据库/java.antjunit的副本";
+        String file1 = "/Users/huahuadepro/自动化测试平台数据库/java.antjunit/src";
+        String file2 = "/Users/huahuadepro/自动化测试平台数据库/java.antjunit的副本/src";
         // 预处理：删除注释、空格、换行
-        ArrayList<String> codeArray = DelComments.clearCommentandBlank(file1);
-        ArrayList<String> codeArray2 = DelComments.clearCommentandBlank(file2);
+        ArrayList<String> codeArraya = DelComments.clearCommentandBlank(file1);
+        ArrayList<String> codeArrayb = DelComments.clearCommentandBlank(file2);
         // 实例化
         Winnowing winnow = new Winnowing();
         // 分别提取两个array的指纹，并且多文件的指纹进行合并
-        Set<Integer> setf1 = winnow.winnowUsingCharactersFile(codeArray, 1);
-        Set<Integer> setf2 = winnow.winnowUsingCharactersFile(codeArray2, 2);
+        Set<Integer> setf1 = winnow.winnowUsingCharactersFile(codeArraya, 1);
+        Set<Integer> setf2 = winnow.winnowUsingCharactersFile(codeArrayb, 2);
         // 相似度计算
-        String winsim = winnow.WinSimCalculator(setf1, setf2);
-        System.out.println("指纹提取公式相似度：" + winsim);
+//        String winsim = winnow.WinSimCalculator(setf1, setf2);
+//        System.out.println("指纹提取公式相似度：" + winsim);
         // 定位分析
-//        Map<String, Object> samepositionmap = winnow.getSameFingerPosition();
-//        winnow.getStringFixedPosition(samepositionmap);
-//        System.out.println(JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(samepositionmap)));
+        Map<String, Object> samepositionmap = winnow.getSameFingerPosition();
+//        winnow.getStringFixedPosition(samepositionmap, codeArraya, codeArrayb);
+        System.out.println(JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(samepositionmap)));
     }
 }

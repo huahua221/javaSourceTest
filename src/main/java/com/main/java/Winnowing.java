@@ -34,10 +34,10 @@ public class Winnowing {
     /**
      * 指纹位置map, buildfinger函数调用次数
      */
-    public Map<String, Object> winmapall = new HashMap<>();
-    public List<Map<String, Object>> winlistforFileA = new ArrayList<>();
-    public List<Map<String, Object>> winlistforFileB = new ArrayList<>();
-    public int lastFilesize = 0; // 用于记录第一个文件夹的大小
+    private Map<String, Object> winmapall = new HashMap<>();
+    private List<Map<String, Object>> winlistforFileA = new ArrayList<>();
+    private List<Map<String, Object>> winlistforFileB = new ArrayList<>();
+    private int thisfilenumber = 0; // 用于记录是所属文件夹的第几个文件
 
     /**
      * 初始化参数，滑动窗口大小 = minDetectedLength - noiseThreshold + 1
@@ -103,17 +103,18 @@ public class Winnowing {
     /**
      * ----通过文件计算由字符组成的N-Grams的数字指纹. 预处理：所以字母变为小写且去除空格----
      */
-    public Set<Integer> winnowUsingCharactersFile(ArrayList<String> codeArray, int number) {
+    public Set<Integer> winnowUsingCharactersFile(ArrayList<String> codeArray, int sequence) {
         Set<Integer> setstring = new TreeSet<>();
         Set<Integer> setstringall = new TreeSet<>();
         try {
             int filesize = codeArray.size(); // 用于记录工程文件的个数，方便后续记录文件的位置
+            System.out.println("文件夹大小：" + filesize);
             for (String text : codeArray) {
                 // 对array中的每一个string进行指纹提取
                 text = pretreatment(text);//预处理
 //                System.out.println("预处理后：" + text);
                 List<Integer> nh = getHashesForNGramsOfChars(text);
-                setstring = buildFingerprintSet(nh, filesize, number);
+                setstring = buildFingerprintSet(nh, filesize, sequence);
 //                System.out.println("指纹分项：" + setstring);
                 // 将所有的指纹set合并
                 setstringall.addAll(setstring);
@@ -163,47 +164,89 @@ public class Winnowing {
     /**
      * 根据窗口大小提取最小的指纹，并按照升序排序
      * 同时，提取相同哈希值指纹的位置
-     * number表示进行的是第几个工程文件夹，总共为1和2
+     * sequence表示进行的是第几个工程文件夹，总共为1和2
      */
-    public Set<Integer> buildFingerprintSet(List<Integer> nHash, int filesize, int filenumber) {
+    public Set<Integer> buildFingerprintSet(List<Integer> nHash, int filesize, int sequence) {
         Set<Integer> fp = new TreeSet<Integer>();
         List<Map<String, Object>> winlist = new ArrayList<>();
-        int winindex = 0; // winlist自己的下标
-        for (int i = 0; i < nHash.size() - this.windowSize + 1; i++) {
-            List<Integer> s = new ArrayList<Integer>(nHash.subList(i, i + this.windowSize));
-            Integer min = Collections.min(s);
-            fp.add(min);
-            Map<String, Object> winmap = new HashMap<>();
-            String fin = Integer.toString(min);
-            if (winindex != 0) {
-                Map<String, Object> lastmap = winlist.get(winindex - 1);
-                String lastfin = MapUtils.getString(lastmap, "finger");
-                if (lastfin.equals(fin)) {
-                    continue;
+        if (sequence == 1) {
+            this.thisfilenumber++;
+            int winindex = 0; // winlist自己的下标
+            for (int i = 0; i < nHash.size() - this.windowSize + 1; i++) {
+                List<Integer> s = new ArrayList<Integer>(nHash.subList(i, i + this.windowSize));
+                Integer min = Collections.min(s);
+                fp.add(min);
+                Map<String, Object> winmap = new HashMap<>();
+                String fin = Integer.toString(min);
+                if (winindex != 0) {
+                    Map<String, Object> lastmap = winlist.get(winindex - 1);
+                    String lastfin = MapUtils.getString(lastmap, "finger");
+                    if (lastfin.equals(fin)) {
+                        continue;
+                    }
                 }
+                winmap.put("finger", fin);
+                winmap.put("position", i + s.indexOf(min));
+                winmap.put("stringStart", i + s.indexOf(min));
+                winmap.put("stringEnd", i + s.indexOf(min) + this.minDetectedLength);
+                winmap.put("fileNumber", this.thisfilenumber);
+                winlist.add(winmap);
+                winindex++;
             }
-            winmap.put("finger", fin);
-            winmap.put("position", i + s.indexOf(min));
-            winlist.add(winmap);
-            winindex++;
+            // 一个文件夹处理完成后进行清零
+            if (this.thisfilenumber == filesize) {
+                this.thisfilenumber = 0;
+            }
+        } else if (sequence == 2) {
+            // sequence=2
+            this.thisfilenumber++;
+            int winindex = 0; // winlist自己的下标
+            for (int i = 0; i < nHash.size() - this.windowSize + 1; i++) {
+                List<Integer> s = new ArrayList<Integer>(nHash.subList(i, i + this.windowSize));
+                Integer min = Collections.min(s);
+                fp.add(min);
+                Map<String, Object> winmap = new HashMap<>();
+                String fin = Integer.toString(min);
+                if (winindex != 0) {
+                    Map<String, Object> lastmap = winlist.get(winindex - 1);
+                    String lastfin = MapUtils.getString(lastmap, "finger");
+                    if (lastfin.equals(fin)) {
+                        continue;
+                    }
+                }
+                winmap.put("finger", fin);
+                winmap.put("position", i + s.indexOf(min));
+                winmap.put("stringStart", i + s.indexOf(min));
+                winmap.put("stringEnd", i + s.indexOf(min) + this.minDetectedLength);
+                winmap.put("fileNumber", this.thisfilenumber);
+                winlist.add(winmap);
+                winindex++;
+            }
+            // 一个文件夹处理完成后进行清零
+            if (this.thisfilenumber == filesize) {
+                this.thisfilenumber = 0;
+            }
+        } else {
+            System.out.println("sequence文件夹个数错误！");
         }
+
         if (filesize == 1) {
             // 对比的是两个文件时
-            if (filenumber == 1) {
+            if (sequence == 1) {
                 this.winmapall.put("fingerA", winlist);
-            } else if (filenumber == 2) {
+            } else if (sequence == 2) {
                 this.winmapall.put("fingerB", winlist);
             } else {
                 System.out.println("超过调用次数！");
             }
         } else {
             // 表示是2个工程文件夹
-            if (filenumber == 1) {
+            if (sequence == 1) {
                 // 表示还没有读完第一个文件夹中的所有文件
                 this.winlistforFileA.addAll(winlist);
                 this.winmapall.put("fingerA", this.winlistforFileA);
 
-            } else if (filenumber == 2) {
+            } else if (sequence == 2) {
                 this.winlistforFileB.addAll(winlist);
                 this.winmapall.put("fingerB", this.winlistforFileB);
             }
@@ -256,6 +299,8 @@ public class Winnowing {
         List<Map<String, Object>> SameAlist = new ArrayList<>();
         List<Map<String, Object>> SameBlist = new ArrayList<>();
         // 获取finger map
+//        System.out.println("winmapall:");
+//        System.out.println(JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(this.winmapall)));
         List<Map<String, Object>> fingerlistA = (List<Map<String, Object>>) MapUtils.getObject(this.winmapall, "fingerA");
         List<Map<String, Object>> fingerlistB = (List<Map<String, Object>>) MapUtils.getObject(this.winmapall, "fingerB");
         // 先给所有的项添加一个falg=0,表示还没有被添加进list
@@ -298,11 +343,30 @@ public class Winnowing {
     /**
      * 利用统计出的finger map来标记字符串
      */
-    public void getStringFixedPosition(Map<String, Object> samePositionmap) {
+    public void getStringFixedPosition(Map<String, Object> samePositionmap, ArrayList<String> codeArrayA, ArrayList<String> codeArrayB) {
         // 根据哈希值的位置进行字符串定位的算法：
         // 起始位置：position
         // 结束位置：position + minDetectedLength
+        // map中的filenumber记录了是哪个文件（文件顺序）
+        List<Map<String, Object>> listStringA = (List<Map<String, Object>>) MapUtils.getObject(samePositionmap, "SameAlist");
+        List<Map<String, Object>> lisStringB = (List<Map<String, Object>>) MapUtils.getObject(samePositionmap, "SameBlist");
+        int sizeA = codeArrayA.size();
+        int sizeB = codeArrayB.size();
+        int count = 0; // 用于记录codeArray进行到的顺序
+        for (String aString : codeArrayA) {
+            count++;
+            for (Map<String, Object> mapStringA : listStringA) {
+                String fileNumber = MapUtils.getString(mapStringA, "fileNumber");
+                int filenumber = Integer.parseInt(fileNumber);
+                String stringStart = MapUtils.getString(mapStringA, "stringStart");
+                String stringEnd = MapUtils.getString(mapStringA, "stringEnd");
+                if (filenumber == count) {
+                    // 匹配文件顺序
 
+                }
+            }
+
+        }
     }
 
 }
