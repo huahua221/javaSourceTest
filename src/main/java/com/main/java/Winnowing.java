@@ -34,8 +34,10 @@ public class Winnowing {
     /**
      * 指纹位置map, buildfinger函数调用次数
      */
-    public int timebuildfinger = 0;
     public Map<String, Object> winmapall = new HashMap<>();
+    public List<Map<String, Object>> winlistforFileA = new ArrayList<>();
+    public List<Map<String, Object>> winlistforFileB = new ArrayList<>();
+    public int lastFilesize = 0; // 用于记录第一个文件夹的大小
 
     /**
      * 初始化参数，滑动窗口大小 = minDetectedLength - noiseThreshold + 1
@@ -61,10 +63,10 @@ public class Winnowing {
     /**
      * ----计算用空格分割的单词组成的N-Grams的数字指纹----
      */
-    public Set<Integer> winnowUsingWords(String text) {
-        List<Integer> nh = getHashesForNGramsOfWords(text, " ");
-        return buildFingerprintSet(nh);
-    }
+//    public Set<Integer> winnowUsingWords(String text) {
+//        List<Integer> nh = getHashesForNGramsOfWords(text, " ");
+//        return buildFingerprintSet(nh);
+//    }
 
     // 先使用给定的分隔符对给定文本进行标记，以获取单词列表。
     // 然后计算每个由单词组成的N-Grams/shingle的哈希值，存入一个列表并返回
@@ -91,26 +93,27 @@ public class Winnowing {
     /**
      * ----计算由字符组成的N-Grams的数字指纹. 预处理：所以字母变为小写且去除空格----
      */
-    public Set<Integer> winnowUsingCharacters(String text) {
-        text = pretreatment(text);//预处理
-//        System.out.println("预处理后：" + text);
-        List<Integer> nh = getHashesForNGramsOfChars(text);
-        return buildFingerprintSet(nh);
-    }
+//    public Set<Integer> winnowUsingCharacters(String text) {
+//        text = pretreatment(text);//预处理
+////        System.out.println("预处理后：" + text);
+//        List<Integer> nh = getHashesForNGramsOfChars(text);
+//        return buildFingerprintSet(nh);
+//    }
 
     /**
      * ----通过文件计算由字符组成的N-Grams的数字指纹. 预处理：所以字母变为小写且去除空格----
      */
-    public Set<Integer> winnowUsingCharactersFile(ArrayList<String> codeArray) {
+    public Set<Integer> winnowUsingCharactersFile(ArrayList<String> codeArray, int number) {
         Set<Integer> setstring = new TreeSet<>();
         Set<Integer> setstringall = new TreeSet<>();
         try {
+            int filesize = codeArray.size(); // 用于记录工程文件的个数，方便后续记录文件的位置
             for (String text : codeArray) {
                 // 对array中的每一个string进行指纹提取
                 text = pretreatment(text);//预处理
 //                System.out.println("预处理后：" + text);
                 List<Integer> nh = getHashesForNGramsOfChars(text);
-                setstring = buildFingerprintSet(nh);
+                setstring = buildFingerprintSet(nh, filesize, number);
 //                System.out.println("指纹分项：" + setstring);
                 // 将所有的指纹set合并
                 setstringall.addAll(setstring);
@@ -160,9 +163,9 @@ public class Winnowing {
     /**
      * 根据窗口大小提取最小的指纹，并按照升序排序
      * 同时，提取相同哈希值指纹的位置
+     * number表示进行的是第几个工程文件夹，总共为1和2
      */
-    public Set<Integer> buildFingerprintSet(List<Integer> nHash) {
-        this.timebuildfinger++;
+    public Set<Integer> buildFingerprintSet(List<Integer> nHash, int filesize, int filenumber) {
         Set<Integer> fp = new TreeSet<Integer>();
         List<Map<String, Object>> winlist = new ArrayList<>();
         int winindex = 0; // winlist自己的下标
@@ -184,21 +187,28 @@ public class Winnowing {
             winlist.add(winmap);
             winindex++;
         }
-        if (this.timebuildfinger == 1) {
-            this.winmapall.put("fingerA", winlist);
-        } else if (this.timebuildfinger == 2) {
-            this.winmapall.put("fingerB", winlist);
+        if (filesize == 1) {
+            // 对比的是两个文件时
+            if (filenumber == 1) {
+                this.winmapall.put("fingerA", winlist);
+            } else if (filenumber == 2) {
+                this.winmapall.put("fingerB", winlist);
+            } else {
+                System.out.println("超过调用次数！");
+            }
         } else {
-            System.out.println("超过调用次数！");
+            // 表示是2个工程文件夹
+            if (filenumber == 1) {
+                // 表示还没有读完第一个文件夹中的所有文件
+                this.winlistforFileA.addAll(winlist);
+                this.winmapall.put("fingerA", this.winlistforFileA);
+
+            } else if (filenumber == 2) {
+                this.winlistforFileB.addAll(winlist);
+                this.winmapall.put("fingerB", this.winlistforFileB);
+            }
         }
 
-//        for (Integer s : fp) {
-//            Map<String, Object> winmap = new HashMap<>();
-//            String fin = Integer.toString(s);
-//            winmap.put("finger", fin);
-//            winmap.put("position", nHash.indexOf(s));
-//            winlist.add(winmap);
-//        }
         return fp;
     }
 
